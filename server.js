@@ -2,6 +2,9 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var oauthserver = require('oauth2-server');
 var memorystore = require('./model.js');
+require('./app/routes/auth.routes')(app);
+require('./app/routes/user.routes')(app);
+
 const cors = require("cors");
 
 var app = express();

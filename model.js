@@ -1,6 +1,8 @@
 var JWT = require('jsonwebtoken');
 const db = require("../models");
 const User = db.user;
+const Auth = db.auth;
+const Client = db.client;
 require("dotenv").config();
 const config = `${process.env.JWT_SECRET_FOR_ACCESS_TOKEN}`;
 
@@ -140,42 +142,79 @@ model.saveRefreshToken = function (refreshToken, clientId, expires, userId, call
 
 // authenticate the client specified by id and secret
 model.getClient = function (clientId, clientSecret, callback) {
-  for(var i = 0, len = oauthClients.length; i < len; i++) {
-    var elem = oauthClients[i];
-    if(elem.clientId === clientId &&
-      (clientSecret === null || elem.clientSecret === clientSecret)) {
-      return callback(false, elem);
+  Client.findOne({
+    where: {
+      clientId: clientId
     }
-  }
-  callback(false, false);
+  })
+    .then(client => {
+      if (!client) {
+        return  callback(false, false);
+      }
+
+      if (client.clientSecret !== clientSecret) {
+        return  callback(false, false);
+      }
+
+            })
+  callback(false, client);
 };
 
 // determine whether the client is allowed the requested grant type
 model.grantTypeAllowed = function (clientId, grantType, callback) {
-  callback(false, authorizedClientIds[grantType] &&
-    authorizedClientIds[grantType].indexOf(clientId.toLowerCase()) >= 0);
-};
+  callback(false, () => { 
+    if (grantType === "password"){
+    Auth.findOne({
+    where: {
+        password: clientId
+    }
+  })} 
+  else{ 
+  Auth.findOne({
+    where: {
+    refresh_token: clientId}
+  })}
+  if (Auth){
+    return true;
+  }
+})}
 
 // authenticate a user
 // for grant_type password
 model.getUser = function (username, password, callback) {
-  for (var i = 0, len = users.length; i < len; i++) {
-    var elem = users[i];
-    if(elem.username === username && elem.password === password) {
-      return callback(false, elem);
+  User.findOne({
+    where: {
+      username: username
     }
-  }
-  callback(false, false);
+  })
+    .then(user => {
+      if (!user) {
+        return  callback(false, false);
+      }
+
+      var passwordIsValid = bcrypt.compareSync(
+        password,
+        user.password
+      );
+
+      if (!passwordIsValid) {
+        return  callback(false, false);
+      }
+
+            })
+  callback(false, user);
 };
 
 var getUserById = function(userId) {
-  for (var i = 0, len = users.length; i < len; i++) {
-    var elem = users[i];
-    if(elem.id === userId) {
-      return elem;
+  User.findOne({
+    where: {
+      userId: userId
     }
+  })
+  if(!user){
+    return null
   }
-  return null;
+  return user;
 };
 
 // for grant_type client_credentials
