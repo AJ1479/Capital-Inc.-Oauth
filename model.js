@@ -1,5 +1,5 @@
 var JWT = require('jsonwebtoken');
-const db = require("../models");
+const db = require("./app/models/index");
 const User = db.user;
 const Auth = db.auth;
 const Client = db.client;
@@ -18,13 +18,13 @@ var JWT_SECRET_FOR_ACCESS_TOKEN = `${process.env.JWT_SECRET_FOR_ACCESS_TOKEN}`;
 var JWT_SECRET_FOR_REFRESH_TOKEN = `${process.env.JWT_SECRET_FOR_REFRESH_TOKEN}`;
 
 // the expiry time of the oauth2-server settings and JWT settings should be the same
-model.JWT_ACCESS_TOKEN_EXPIRY_SECONDS = process.env.JWT_ACCESS_TOKEN_EXPIRY_SECONDS ;             // 30 minutes
-model.JWT_REFRESH_TOKEN_EXPIRY_SECONDS = process.env.JWT_REFRESH_TOKEN_EXPIRY_SECONDS ;         // 14 days
+model.JWT_ACCESS_TOKEN_EXPIRY_SECONDS = process.env.JWT_ACCESS_TOKEN_EXPIRY_SECONDS;             // 30 minutes
+model.JWT_REFRESH_TOKEN_EXPIRY_SECONDS = process.env.JWT_REFRESH_TOKEN_EXPIRY_SECONDS;         // 14 days
 
 // In-memory datastores
 var oauthClients = [{
-  clientId : 'id1',
-  clientSecret : 'secret',
+  clientId: 'id1',
+  clientSecret: 'secret',
 }];
 
 // key is grant_type
@@ -39,11 +39,11 @@ var authorizedClientIds = {
 };
 
 // current registered users
-var users = [ {
-    id : '123',
-    username: 'user1',
-    password: 'password'
-  }
+var users = [{
+  id: '123',
+  username: 'user1',
+  password: 'password'
+}
 ];
 
 
@@ -52,7 +52,7 @@ var users = [ {
 // generateToken
 // This generateToken implementation generates a token with JWT.
 // the token output is the Base64 encoded string.
-model.generateToken = function(type, req, callback) {
+model.generateToken = function (type, req, callback) {
   var token;
   var secret;
   var user = req.user;
@@ -60,8 +60,8 @@ model.generateToken = function(type, req, callback) {
   var payload = {
     // public claims
     iss: JWT_ISSUER,   // issuer
-//    exp: exp,        // the expiry date is set below - expiry depends on type
-//    jti: '',         // unique id for this token - needed if we keep an store of issued tokens?
+    //    exp: exp,        // the expiry date is set below - expiry depends on type
+    //    jti: '',         // unique id for this token - needed if we keep an store of issued tokens?
     // private claims
     userId: user.id
   };
@@ -87,7 +87,7 @@ model.generateToken = function(type, req, callback) {
 // user in this function which oauth2-server puts into the req object
 model.getAccessToken = function (bearerToken, callback) {
 
-  return JWT.verify(bearerToken, JWT_SECRET_FOR_ACCESS_TOKEN, function(err, decoded) {
+  return JWT.verify(bearerToken, JWT_SECRET_FOR_ACCESS_TOKEN, function (err, decoded) {
 
     if (err) {
       return callback(err, false);   // the err contains JWT error data
@@ -115,7 +115,7 @@ model.saveAccessToken = function (accessToken, clientId, expires, userId, callba
 // The bearer token is a JWT, so we decrypt and verify it. We get a reference to the
 // user in this function which oauth2-server puts into the req object
 model.getRefreshToken = function (bearerToken, callback) {
-  return JWT.verify(bearerToken, JWT_SECRET_FOR_REFRESH_TOKEN, function(err, decoded) {
+  return JWT.verify(bearerToken, JWT_SECRET_FOR_REFRESH_TOKEN, function (err, decoded) {
 
     if (err) {
       return callback(err, false);
@@ -149,69 +149,73 @@ model.getClient = function (clientId, clientSecret, callback) {
   })
     .then(client => {
       if (!client) {
-        return  callback(false, false);
+        return callback(false, false);
       }
 
       if (client.clientSecret !== clientSecret) {
-        return  callback(false, false);
+        return callback(false, false);
       }
 
-            })
-  callback(false, client);
+      callback(false, client);
+    })
 };
 
 // determine whether the client is allowed the requested grant type
 model.grantTypeAllowed = function (clientId, grantType, callback) {
-  callback(false, () => { 
-    if (grantType === "password"){
-    Auth.findOne({
-    where: {
-        password: clientId
+  callback(false, () => {
+    if (grantType === "password") {
+      Auth.findOne({
+        where: {
+          password: clientId
+        }
+      })
     }
-  })} 
-  else{ 
-  Auth.findOne({
-    where: {
-    refresh_token: clientId}
-  })}
-  if (Auth){
-    return true;
-  }
-})}
+    else {
+      Auth.findOne({
+        where: {
+          refresh_token: clientId
+        }
+      })
+    }
+    if (Auth) {
+      return true;
+    }
+  })
+}
 
 // authenticate a user
 // for grant_type password
-model.getUser = function (username, password, callback) {
-  User.findOne({
+model.getUser = async function (username, password, callback) {
+  const user = await User.findOne({
     where: {
       username: username
     }
   })
-    .then(user => {
-      if (!user) {
-        return  callback(false, false);
-      }
 
-      var passwordIsValid = bcrypt.compareSync(
-        password,
-        user.password
-      );
+  if (!user) {
+    return callback(false, false);
+  }
 
-      if (!passwordIsValid) {
-        return  callback(false, false);
-      }
+  var passwordIsValid = bcrypt.compareSync(
+    password,
+    user.password
+  );
 
-            })
+  if (!passwordIsValid) {
+    return callback(false, false);
+  }
+
   callback(false, user);
+
 };
 
-var getUserById = function(userId) {
+var getUserById = function (userId) {
   User.findOne({
     where: {
       userId: userId
     }
   })
-  if(!user){
+  if (!user) {
     return null
   }
   return user;
