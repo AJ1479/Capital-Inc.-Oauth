@@ -1,5 +1,12 @@
 var JWT = require('jsonwebtoken');
+const db = require("../models");
+const User = db.user;
+require("dotenv").config();
+const config = `${process.env.JWT_SECRET_FOR_ACCESS_TOKEN}`;
 
+const Op = db.Sequelize.Op;
+
+var bcrypt = require("bcryptjs");
 require("dotenv").config();
 
 var model = {};
@@ -14,19 +21,18 @@ model.JWT_REFRESH_TOKEN_EXPIRY_SECONDS = process.env.JWT_REFRESH_TOKEN_EXPIRY_SE
 
 // In-memory datastores
 var oauthClients = [{
-  clientId : 'thom',
+  clientId : 'id1',
   clientSecret : 'secret',
-  redirectUri : ''
 }];
 
 // key is grant_type
 // value is the array of authorized clientId's
 var authorizedClientIds = {
   password: [
-    'thom'
+    'id1'
   ],
   refresh_token: [
-    'thom'
+    'id1'
   ]
 };
 

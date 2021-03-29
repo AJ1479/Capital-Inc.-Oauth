@@ -2,8 +2,19 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var oauthserver = require('oauth2-server');
 var memorystore = require('./model.js');
+const cors = require("cors");
 
 var app = express();
+
+const db = require("./app/models");
+
+db.sequelize.sync();
+
+var corsOptions = {
+  origin: "http://localhost:8081"
+};
+
+app.use(cors(corsOptions));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
