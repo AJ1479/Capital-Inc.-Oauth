@@ -19,14 +19,11 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-const authRotes = require('./app/routes/auth.routes');
-app.use(authRotes);
+const authRoutes = require('./app/routes/auth.routes');
+app.use(authRoutes);
 
 const userRoutes = require('./app/routes/user.routes');
 app.use(userRoutes);
-// require('./app/routes/auth.routes')(app);
-// require('./app/routes/user.routes')(app);
-
 
 app.oauth = oauthserver({
   model: memorystore,

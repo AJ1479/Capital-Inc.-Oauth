@@ -21,32 +21,6 @@ var JWT_SECRET_FOR_REFRESH_TOKEN = `${process.env.JWT_SECRET_FOR_REFRESH_TOKEN}`
 model.JWT_ACCESS_TOKEN_EXPIRY_SECONDS = process.env.JWT_ACCESS_TOKEN_EXPIRY_SECONDS;             // 30 minutes
 model.JWT_REFRESH_TOKEN_EXPIRY_SECONDS = process.env.JWT_REFRESH_TOKEN_EXPIRY_SECONDS;         // 14 days
 
-// In-memory datastores
-var oauthClients = [{
-  clientId: 'id1',
-  clientSecret: 'secret',
-}];
-
-// key is grant_type
-// value is the array of authorized clientId's
-var authorizedClientIds = {
-  password: [
-    'id1'
-  ],
-  refresh_token: [
-    'id1'
-  ]
-};
-
-// current registered users
-var users = [{
-  id: '123',
-  username: 'user1',
-  password: 'password'
-}
-];
-
-
 // Functions required to implement the model for oauth2-server
 
 // generateToken
@@ -215,11 +189,13 @@ var getUserById = function (userId) {
       userId: userId
     }
   })
-  if (!user) {
-    return null
-  }
-  return user;
-};
+  .then(user => {
+    if (!user) {
+      return null;
+    }
+    return user;
+    })
+  };
 
 // for grant_type client_credentials
 // given client credentials

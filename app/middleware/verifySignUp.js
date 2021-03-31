@@ -3,13 +3,11 @@ const User = db.user;
 
 checkDuplicateUsernameOrEmail = (req, res, next) => {
   // Username
-  console.log(req.body);
   User.findOne({
     where: {
       username: req.body.username
     }
   }).then(user => {
-    console.log(user)
     if (user) {
       res.status(400).send({
         message: "Failed! Username is already in use!"
