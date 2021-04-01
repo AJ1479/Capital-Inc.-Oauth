@@ -9,6 +9,7 @@ const config = `${process.env.JWT_SECRET_FOR_ACCESS_TOKEN}`;
 const Op = db.Sequelize.Op;
 
 var bcrypt = require("bcryptjs");
+const { client } = require('./app/models/index');
 require("dotenv").config();
 
 var model = {};
@@ -37,7 +38,9 @@ model.generateToken = function (type, req, callback) {
     //    exp: exp,        // the expiry date is set below - expiry depends on type
     //    jti: '',         // unique id for this token - needed if we keep an store of issued tokens?
     // private claims
-    userEmail: user.email
+    userEmail: user.email,
+    clientId: client.clientId
+
   };
   var options = {
     algorithms: ['HS256']  // HMAC using SHA-256 hash algorithm
@@ -66,7 +69,7 @@ model.getAccessToken = function (bearerToken, callback) {
     if (err) {
       return callback(err, false);   // the err contains JWT error data
     }
-
+    
     // other verifications could be performed here
     // eg. that the jti is valid
 
@@ -89,12 +92,14 @@ model.saveAccessToken = function (accessToken, clientId, expires, userEmail, cal
 // The bearer token is a JWT, so we decrypt and verify it. We get a reference to the
 // user in this function which oauth2-server puts into the req object
 model.getRefreshToken = function (bearerToken, callback) {
-  return JWT.verify(bearerToken, JWT_SECRET_FOR_REFRESH_TOKEN, function (err, decoded) {
+  const token = bearerToken.split(' ')[1];
+  return JWT.verify(token, JWT_SECRET_FOR_REFRESH_TOKEN, function (err, decoded) {
 
     if (err) {
       return callback(err, false);
     }
-
+    console.log('helloworld')
+    console.log(getUserByEmail(decoded.userEmail));
     // other verifications could be performed here
     // eg. that the jti is valid
 
@@ -103,7 +108,8 @@ model.getRefreshToken = function (bearerToken, callback) {
     // claims that are useful
     return callback(false, {
       expires: new Date(decoded.exp),
-      user: getUserByEmail(decoded.userEmail)
+      user: decoded.userEmail,
+      clientId: decoded.clientId
     });
   });
 };
@@ -184,6 +190,7 @@ model.getUser = async function (username, password, callback) {
 };
 
 var getUserByEmail = function (userEmail) {
+  console.log('i am here')
   User.findOne({
     where: {
       email: userEmail
@@ -193,6 +200,7 @@ var getUserByEmail = function (userEmail) {
     if (!user) {
       return null;
     }
+    console.log(user)
     return user;
     })
   };
