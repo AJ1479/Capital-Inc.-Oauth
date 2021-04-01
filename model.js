@@ -37,7 +37,7 @@ model.generateToken = function (type, req, callback) {
     //    exp: exp,        // the expiry date is set below - expiry depends on type
     //    jti: '',         // unique id for this token - needed if we keep an store of issued tokens?
     // private claims
-    userId: user.id
+    userEmail: user.email
   };
   var options = {
     algorithms: ['HS256']  // HMAC using SHA-256 hash algorithm
@@ -75,14 +75,14 @@ model.getAccessToken = function (bearerToken, callback) {
     // claims that are useful
     return callback(false, {
       expires: new Date(decoded.exp),
-      user: getUserById(decoded.userId)
+      user: getUserByEmail(decoded.userEmail)
     });
   });
 };
 
 
 // As we're using JWT there's no need to store the token after it's generated
-model.saveAccessToken = function (accessToken, clientId, expires, userId, callback) {
+model.saveAccessToken = function (accessToken, clientId, expires, userEmail, callback) {
   return callback(false);
 };
 
@@ -103,14 +103,14 @@ model.getRefreshToken = function (bearerToken, callback) {
     // claims that are useful
     return callback(false, {
       expires: new Date(decoded.exp),
-      user: getUserById(decoded.userId)
+      user: getUserByEmail(decoded.userEmail)
     });
   });
 };
 
 // required for grant_type=refresh_token
 // As we're using JWT there's no need to store the token after it's generated
-model.saveRefreshToken = function (refreshToken, clientId, expires, userId, callback) {
+model.saveRefreshToken = function (refreshToken, clientId, expires, userEmail, callback) {
   return callback(false);
 };
 
@@ -183,10 +183,10 @@ model.getUser = async function (username, password, callback) {
 
 };
 
-var getUserById = function (userId) {
+var getUserByEmail = function (userEmail) {
   User.findOne({
     where: {
-      userId: userId
+      email: userEmail
     }
   })
   .then(user => {

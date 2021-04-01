@@ -13,7 +13,7 @@ app.use(function (req, res, next) {
 app.post(
   "/api/auth/signup",
   [
-    verifySignUp.checkDuplicateUsernameOrEmail,
+    verifySignUp.checkDuplicateEmail,
   ],
   controller.signup
 );

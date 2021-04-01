@@ -19,11 +19,8 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-const authRoutes = require('./app/routes/auth.routes');
+const authRoutes = require('./app/routes/auth.routes'); // sign-up route
 app.use(authRoutes);
-
-const userRoutes = require('./app/routes/user.routes');
-app.use(userRoutes);
 
 app.oauth = oauthserver({
   model: memorystore,
@@ -38,22 +35,6 @@ app.all('/oauth/token', app.oauth.grant());
 app.get('/', app.oauth.authorise(), function (req, res) {
   res.send('Secret area');
 });
-
-app.get('/test', (req, res) => {
-    const x = require('./app/models');
-    const y = x.client;
-    const z = x.auth;
-    z.create({
-      password: 'secret',
-      refresh_token: 'secret'
-    })
-
-})
-
-// setTimeout(() => {
-
-
-// }, 5000)
 
 app.use(app.oauth.errorHandler());
 
