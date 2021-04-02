@@ -23,7 +23,7 @@ const sendVerificationEmail = (to, token) => {
         content: [
       {
         type: 'text/plain',
-        value: `http://localhost:3000/verification?email=${to}&Authorization=Bearer%20${token}`
+        value: `http://localhost:3000/verification?email=${to}&Authorization=${token}`
       }
     ]
       }

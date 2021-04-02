@@ -10,15 +10,13 @@ dotenv.config();
 process.env.TOKEN_SECRET;
 
 function authenticateToken(req, res) {
-    const authHeader = req.headers['authorization']
-    const token = authHeader && authHeader.split(' ')[1]
+    const token = req.query.Authorization;
     if (token == null) return res.sendStatus(401)
   
     jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
       console.log(req.query.email)
   
       if (err) {
-        console.log('hello i am here as well')
         return res.sendStatus(403)}
   
      if (req.query.email == user.email){
@@ -35,7 +33,6 @@ const VerificationController = (req, res) => {
     })
       .then(user => {
         if (user.isVerified) {
-          console.log('hello i am here')
           return res.status(202).json(`Email Already Verified`);
         } else {
 
@@ -45,18 +42,15 @@ const VerificationController = (req, res) => {
                 isVerified: true
               })
                   .then((updatedUser) => {
-
                     return res.status(200).json(`User with ${user.email} has been verified`);
                   })
                   .catch(reason => {
-                    console.log('hi'+reason)
                     return res.status(403).json(`Verification failed`);
                   });
               }
         }
       })
       .catch(reason => {
-
         return res.status(404).json(`Email not found`);
       });
 }
