@@ -26,6 +26,7 @@
     "mysql2": "^2.2.5",
     "nodemon": "^2.0.7",
     "oauth2-server": "^2.4.0",
+    "sendgrid": "^5.2.3",
     "sequelize": "^6.6.2"
   }
 }

@@ -4,19 +4,15 @@ const User = db.user;
 const Auth = db.auth;
 const Client = db.client;
 require("dotenv").config();
-const config = `${process.env.JWT_SECRET_FOR_ACCESS_TOKEN}`;
-
-const Op = db.Sequelize.Op;
 
 var bcrypt = require("bcryptjs");
-const { client } = require('./app/models/index');
 require("dotenv").config();
 
 var model = {};
 
 var JWT_ISSUER = 'capitalincoauth';
-var JWT_SECRET_FOR_ACCESS_TOKEN = `${process.env.JWT_SECRET_FOR_ACCESS_TOKEN}`;
-var JWT_SECRET_FOR_REFRESH_TOKEN = `${process.env.JWT_SECRET_FOR_REFRESH_TOKEN}`;
+var JWT_SECRET_FOR_ACCESS_TOKEN = process.env.JWT_SECRET_FOR_ACCESS_TOKEN
+var JWT_SECRET_FOR_REFRESH_TOKEN = process.env.JWT_SECRET_FOR_REFRESH_TOKEN
 
 // the expiry time of the oauth2-server settings and JWT settings should be the same
 model.JWT_ACCESS_TOKEN_EXPIRY_SECONDS = process.env.JWT_ACCESS_TOKEN_EXPIRY_SECONDS;             // 30 minutes
@@ -30,16 +26,18 @@ model.JWT_REFRESH_TOKEN_EXPIRY_SECONDS = process.env.JWT_REFRESH_TOKEN_EXPIRY_SE
 model.generateToken = function (type, req, callback) {
   var token;
   var secret;
+  var clientId = req.body.client_id;
+  console.log(clientId)
   var user = req.user;
   var exp = new Date();
   var payload = {
     // public claims
-    iss: JWT_ISSUER,   // issuer
+    iss: JWT_ISSUER,       // issuer
     //    exp: exp,        // the expiry date is set below - expiry depends on type
     //    jti: '',         // unique id for this token - needed if we keep an store of issued tokens?
     // private claims
     userEmail: user.email,
-    clientId: client.clientId
+    clientId: clientId
 
   };
   var options = {
@@ -99,7 +97,7 @@ model.getRefreshToken = function (bearerToken, callback) {
       return callback(err, false);
     }
     console.log('helloworld')
-    console.log(getUserByEmail(decoded.userEmail));
+    //console.log(getUserByEmail(decoded.userEmail));
     // other verifications could be performed here
     // eg. that the jti is valid
 
@@ -165,10 +163,10 @@ model.grantTypeAllowed = function (clientId, grantType, callback) {
 
 // authenticate a user
 // for grant_type password
-model.getUser = async function (username, password, callback) {
+model.getUser = async function (email, password, callback) {
   const user = await User.findOne({
     where: {
-      username: username
+      email: email
     }
   })
 
