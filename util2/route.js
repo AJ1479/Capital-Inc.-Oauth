@@ -9,5 +9,4 @@ app.get('/update', ChangePasswordController);
 app.get('/verify', (req,res) => {
     res.sendFile(__dirname + '/index.html');});
 app.post('/verify', ChangePasswordController);
-
 module.exports = app;
