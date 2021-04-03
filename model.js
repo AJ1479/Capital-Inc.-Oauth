@@ -183,6 +183,10 @@ model.getUser = async function (email, password, callback) {
     return callback(false, false);
   }
 
+  if (user.isVerified==0) {
+    return callback(false, false);
+  }
+
   callback(false, user);
 
 };

@@ -19,11 +19,12 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-const authRoutes = require('./app/routes/auth.routes'); // sign-up route
-app.use(authRoutes);
-
 const auth = require('./util/routes'); // sign-up route
 app.use(auth);
+
+const pass = require('./util2/route'); // sign-up route
+app.use(pass);
+
 
 app.oauth = oauthserver({
   model: memorystore,

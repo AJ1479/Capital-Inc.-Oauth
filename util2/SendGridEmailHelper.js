@@ -14,7 +14,7 @@ const sendVerificationEmail = (to, token) => {
                 email: to
               }
             ],
-            subject: "Verify Your Email"
+            subject: "Click the link to update your password"
           }
         ],
         from: {
@@ -23,7 +23,7 @@ const sendVerificationEmail = (to, token) => {
         content: [
       {
         type: 'text/plain',
-        value: `http://localhost:3000/verification?email=${to}&Authorization=${token}`
+        value: `http://localhost:3000/verify?email=${to}&Authorization=${token}`
       }
     ]
       }

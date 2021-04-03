@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+       <style>
+.hidden{
+    display: none;
+}
+           </style>
+    </head>
+<body>
+    <form action="/verify" method="post">
+        <label for="password">New password</label><br>
+        <input type="text" id="password" name="password"><br>
+        <input type="hidden" id="token" name="token"><br>
+        <input type="hidden" id="email" name="email"><br>
+        <input class="hidden" id="submit" type="submit" value="Submit">
+      </form> 
+      <input type="button" id="button" value="Submit" onclick="abc()">
+</body>
+
+<script> 
+function getParameterByName(name, url = window.location.href) {
+    name = name.replace(/[\[\]]/g, '\\$&');
+    var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+function abc(){
+document.getElementById('token').value = getParameterByName('Authorization');
+document.getElementById('email').value = getParameterByName('email');
+document.getElementById('submit').click();
+}
+</script>
+</html>
