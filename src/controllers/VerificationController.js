@@ -1,4 +1,4 @@
-const db = require("../app/models/index");
+const db = require("../models/index");
 const User = db.user;
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');

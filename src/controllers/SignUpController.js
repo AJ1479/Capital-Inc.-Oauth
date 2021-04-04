@@ -11,8 +11,8 @@ function generateAccessToken(useremail) {
     return jwt.sign(useremail, process.env.TOKEN_SECRET, { expiresIn: '86400s' });
   }
 
-const sendVerificationEmail = require('./SendGridEmailHelper');
-const db = require("../app/models/index");
+const sendVerificationEmail = require('../middleware/SendGridEmailHelper');
+const db = require("../models/index");
 const User = db.user;
 
 const SignUpController = (req, res, next) => {
@@ -32,7 +32,7 @@ const SignUpController = (req, res, next) => {
         })
         .then ((user) => {
         const token = generateAccessToken({ email: user.email });
-        sendVerificationEmail(user.email, token);
+        sendVerificationEmail(user.email, token, 'verification');
         return res.status(200).json(`${user.email} account created successfully`);
       })
     }

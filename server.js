@@ -1,7 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var oauthserver = require('oauth2-server');
-var memorystore = require('./model.js');
+var memorystore = require('./src/middleware/model.js');
 
 const cors = require("cors");
 
@@ -9,7 +9,7 @@ var app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-const db = require("./app/models");
+const db = require("./src/models/index");
 
 db.sequelize.sync();
 
@@ -19,12 +19,8 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-const auth = require('./util/routes'); // sign-up route
-app.use(auth);
-
-const pass = require('./util2/route'); // sign-up route
-app.use(pass);
-
+const router = require('./src/router'); // sign-up route
+app.use(router);
 
 app.oauth = oauthserver({
   model: memorystore,
@@ -42,7 +38,7 @@ app.get('/', app.oauth.authorise(), function (req, res) {
 
 if(process.env.MODE === 'dev'){
 app.get('/test', (req, res) => {
-  const x = require('./app/models');
+  const x = require('./src/models/db.config');
   const y = x.client;
   const z = x.auth;
   z.create({

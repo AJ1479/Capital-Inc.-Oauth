@@ -1,5 +1,5 @@
 var JWT = require('jsonwebtoken');
-const db = require("./app/models/index");
+const db = require("../models/index");
 const User = db.user;
 const Auth = db.auth;
 const Client = db.client;

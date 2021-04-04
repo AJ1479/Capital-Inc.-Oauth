@@ -1,4 +1,4 @@
-const db = require("../app/models/index");
+const db = require("../models/index");
 const Client = db.client;
 
 const verifyClient = (req, res, next) => {

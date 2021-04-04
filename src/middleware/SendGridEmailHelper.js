@@ -1,7 +1,7 @@
 require('dotenv').config()
 const sendGrid = require('sendgrid').mail;
 const sg = require('sendgrid')(process.env.SendGridApiKey);
-const sendVerificationEmail = (to, token) => {
+const sendVerificationEmail = (to, token, type) => {
     const hostUrl = "https://api.sendgrid.com";
     const request = sg.emptyRequest({
       method: "POST",
@@ -14,7 +14,7 @@ const sendVerificationEmail = (to, token) => {
                 email: to
               }
             ],
-            subject: "Click the link to update your password"
+            subject: "Verify Your Email"
           }
         ],
         from: {
@@ -23,7 +23,7 @@ const sendVerificationEmail = (to, token) => {
         content: [
       {
         type: 'text/plain',
-        value: `http://localhost:3000/verify?email=${to}&Authorization=${token}`
+        value: `http://localhost:3000/${type}?email=${to}&Authorization=${token}`
       }
     ]
       }
