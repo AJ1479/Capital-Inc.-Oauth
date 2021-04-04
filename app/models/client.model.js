@@ -6,6 +6,9 @@ module.exports = (sequelize, Sequelize) => {
       clientSecret: {
         type: Sequelize.STRING
       },
+      clientURL: {
+        type: Sequelize.STRING
+      }
     });
   
     return Client;
