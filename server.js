@@ -36,17 +36,17 @@ app.get('/', app.oauth.authorise(), function (req, res) {
   res.send('Secret area');
 });
 
-if(process.env.MODE === 'dev'){
-app.get('/test', (req, res) => {
-  const x = require('./src/models/db.config');
-  const y = x.client;
-  const z = x.auth;
-  z.create({
-    password: 'secret',
-    refresh_token: 'secret'
-  })
+if (process.env.MODE === 'dev') {
+  app.get('/test', (req, res) => {
+    const x = require('./src/models/db.config');
+    const y = x.client;
+    const z = x.auth;
+    z.create({
+      password: 'secret',
+      refresh_token: 'secret'
+    })
 
-})
+  })
 }
 
 app.use(app.oauth.errorHandler());

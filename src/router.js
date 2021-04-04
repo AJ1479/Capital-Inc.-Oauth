@@ -15,8 +15,9 @@ app.get('/verification', VerificationController);
 app.post('/forgotpassword', ForgotPasswordController);
 
 app.get('/update', ChangePasswordController);
-app.get('/verify', (req,res) => {
-    res.sendFile(__dirname + '/views/index.html');});
+app.get('/verify', (req, res) => {
+    res.sendFile(__dirname + '/views/index.html');
+});
 app.post('/verify', ChangePasswordController);
 app.post('/verifyClient', verifyClient);
 module.exports = app;

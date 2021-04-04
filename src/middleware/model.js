@@ -67,7 +67,7 @@ model.getAccessToken = function (bearerToken, callback) {
     if (err) {
       return callback(err, false);   // the err contains JWT error data
     }
-    
+
     // other verifications could be performed here
     // eg. that the jti is valid
 
@@ -183,7 +183,7 @@ model.getUser = async function (email, password, callback) {
     return callback(false, false);
   }
 
-  if (user.isVerified==0) {
+  if (user.isVerified == 0) {
     return callback(false, false);
   }
 
@@ -198,14 +198,14 @@ var getUserByEmail = function (userEmail) {
       email: userEmail
     }
   })
-  .then(user => {
-    if (!user) {
-      return null;
-    }
-    console.log(user)
-    return user;
+    .then(user => {
+      if (!user) {
+        return null;
+      }
+      console.log(user)
+      return user;
     })
-  };
+};
 
 // for grant_type client_credentials
 // given client credentials
