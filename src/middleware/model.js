@@ -6,9 +6,9 @@ const Client = db.client;
 require("dotenv").config();
 
 var bcrypt = require("bcryptjs");
-require("dotenv").config();
+var model = module.exports;
 
-var model = {};
+// based on https://github.com/thomseddon/node-oauth2-server/tree/master/examples/memory
 
 var JWT_ISSUER = 'capitalincoauth';
 var JWT_SECRET_FOR_ACCESS_TOKEN = process.env.JWT_SECRET_FOR_ACCESS_TOKEN
@@ -23,22 +23,20 @@ model.JWT_REFRESH_TOKEN_EXPIRY_SECONDS = process.env.JWT_REFRESH_TOKEN_EXPIRY_SE
 // generateToken
 // This generateToken implementation generates a token with JWT.
 // the token output is the Base64 encoded string.
-model.generateToken = function (type, req, callback) {
+model.generateToken = function(type, req, callback) {
   var token;
   var secret;
-  var clientId = req.body.client_id;
-  console.log(clientId)
   var user = req.user;
+  var clientId = req.body.client_id;
   var exp = new Date();
   var payload = {
     // public claims
-    iss: JWT_ISSUER,       // issuer
-    //    exp: exp,        // the expiry date is set below - expiry depends on type
-    //    jti: '',         // unique id for this token - needed if we keep an store of issued tokens?
+    iss: JWT_ISSUER,   // issuer
+//    exp: exp,        // the expiry date is set below - expiry depends on type
+//    jti: '',         // unique id for this token - needed if we keep an store of issued tokens?
     // private claims
-    userEmail: user.email,
+    userId: user.id,
     clientId: clientId
-
   };
   var options = {
     algorithms: ['HS256']  // HMAC using SHA-256 hash algorithm
@@ -52,8 +50,7 @@ model.generateToken = function (type, req, callback) {
     exp.setSeconds(exp.getSeconds() + model.JWT_REFRESH_TOKEN_EXPIRY_SECONDS);
   }
   payload.exp = exp.getTime();
-
-  token = JWT.sign(payload, secret, options);
+token = JWT.sign(payload, secret, options);
 
   callback(false, token);
 };
@@ -62,8 +59,7 @@ model.generateToken = function (type, req, callback) {
 // user in this function which oauth2-server puts into the req object
 model.getAccessToken = function (bearerToken, callback) {
 
-  return JWT.verify(bearerToken, JWT_SECRET_FOR_ACCESS_TOKEN, function (err, decoded) {
-
+  return JWT.verify(bearerToken, JWT_SECRET_FOR_ACCESS_TOKEN, function(err, decoded) {
     if (err) {
       return callback(err, false);   // the err contains JWT error data
     }
@@ -76,37 +72,34 @@ model.getAccessToken = function (bearerToken, callback) {
     // claims that are useful
     return callback(false, {
       expires: new Date(decoded.exp),
-      user: getUserByEmail(decoded.userEmail)
+      user: getUserById(decoded.userId)
     });
   });
 };
 
 
 // As we're using JWT there's no need to store the token after it's generated
-model.saveAccessToken = function (accessToken, clientId, expires, userEmail, callback) {
+model.saveAccessToken = function (accessToken, clientId, expires, userId, callback) {
   return callback(false);
 };
 
 // The bearer token is a JWT, so we decrypt and verify it. We get a reference to the
 // user in this function which oauth2-server puts into the req object
 model.getRefreshToken = function (bearerToken, callback) {
-  const token = bearerToken.split(' ')[1];
-  return JWT.verify(token, JWT_SECRET_FOR_REFRESH_TOKEN, function (err, decoded) {
+  return JWT.verify(bearerToken, JWT_SECRET_FOR_REFRESH_TOKEN, function(err, decoded) {
 
     if (err) {
       return callback(err, false);
     }
-    console.log('helloworld')
-    //console.log(getUserByEmail(decoded.userEmail));
     // other verifications could be performed here
     // eg. that the jti is valid
-
+    
     // instead of passing the payload straight out we use an object with the
     // mandatory keys expected by oauth2-server plus any other private
     // claims that are useful
     return callback(false, {
       expires: new Date(decoded.exp),
-      user: decoded.userEmail,
+      user: decoded.userId,
       clientId: decoded.clientId
     });
   });
@@ -114,98 +107,107 @@ model.getRefreshToken = function (bearerToken, callback) {
 
 // required for grant_type=refresh_token
 // As we're using JWT there's no need to store the token after it's generated
-model.saveRefreshToken = function (refreshToken, clientId, expires, userEmail, callback) {
+model.saveRefreshToken = function (refreshToken, clientId, expires, userId, callback) {
   return callback(false);
 };
 
 // authenticate the client specified by id and secret
-model.getClient = function (clientId, clientSecret, callback) {
-  Client.findOne({
-    where: {
-      clientId: clientId
-    }
-  })
-    .then(client => {
-      if (!client) {
-        return callback(false, false);
+model.getClient = async function (clientId, clientSecret, callback) {
+   var client1 = await Client.findOne({
+      where: {
+        clientId: clientId
       }
-
-      if (client.clientSecret !== clientSecret) {
-        return callback(false, false);
-      }
-
-      callback(false, client);
     })
-};
+        if (client1 == null || client1.clientSecret == clientSecret) {
+            return callback(false, client1);
+        }
+        return callback(false, false);
+  };
 
 // determine whether the client is allowed the requested grant type
 model.grantTypeAllowed = function (clientId, grantType, callback) {
-  callback(false, () => {
-    if (grantType === "password") {
-      Auth.findOne({
-        where: {
-          password: clientId
-        }
-      })
+    callback(false, () => {
+        if(grantType === 'password' || grantType === 'refresh_token'){
+      if (grantType === "password") {
+        Auth.findOne({
+          where: {
+            password: clientId
+          }
+        })
+        .then(() => {
+            return true
+        })
+        return false;
+      }
+      else {
+        Auth.findOne({
+          where: {
+            refresh_token: clientId
+          }
+        })
+      .then(()=> {return true})
+      return false;
+      }
     }
-    else {
-      Auth.findOne({
-        where: {
-          refresh_token: clientId
-        }
-      })
-    }
-    if (Auth) {
-      return true;
-    }
-  })
+    return false;
+})
 }
+
 
 // authenticate a user
 // for grant_type password
-model.getUser = async function (email, password, callback) {
-  const user = await User.findOne({
-    where: {
-      email: email
+model.getUser = function (username, password, callback) {
+  for (var i = 0, len = users.length; i < len; i++) {
+    var elem = users[i];
+    if(elem.username === username && elem.password === password) {
+      return callback(false, elem);
     }
-  })
-
-  if (!user) {
-    return callback(false, false);
   }
-
-  var passwordIsValid = bcrypt.compareSync(
-    password,
-    user.password
-  );
-
-  if (!passwordIsValid) {
-    return callback(false, false);
-  }
-
-  if (user.isVerified == 0) {
-    return callback(false, false);
-  }
-
-  callback(false, user);
-
+  callback(false, false);
 };
 
-var getUserByEmail = function (userEmail) {
-  console.log('i am here')
-  User.findOne({
-    where: {
-      email: userEmail
-    }
-  })
-    .then(user => {
-      if (!user) {
-        return null;
+model.getUser = async function (username, password, callback) {
+    var user1 = await User.findOne({
+      where: {
+        email: username
       }
-      console.log(user)
-      return user;
     })
-};
+
+    var passwordIsValid = bcrypt.compareSync(
+      password,
+      user1.password
+    );
+  
+    if (!passwordIsValid) {
+      return callback(false, false);
+    }
+  
+    if (user1.isVerified == 0) {
+      return callback(false, false);
+    }
+  
+    callback(false, user1);
+  
+  };
+
+
+
+
+let getUserById = async (userId) => {
+  var hello = async function (){
+    var user1 = await User.findOne({
+        where: {
+id: userId
+        }
+    })
+
+    if(user1){
+        return user1;
+    }
+    return null;
+}
+let result = await hello;
+return result}
 
 // for grant_type client_credentials
 // given client credentials
@@ -216,5 +218,3 @@ var getUserByEmail = function (userEmail) {
 //model.getUserFromClient = function(clientId, clientSecret, callback) {
 //
 //};
-
-module.exports = model;
