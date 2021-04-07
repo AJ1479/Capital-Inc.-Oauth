@@ -51,6 +51,6 @@ if (process.env.MODE === 'dev') {
 
 app.use(app.oauth.errorHandler());
 
-app.listen(3000, () => {
+app.listen(process.env.PORT, () => {
   console.log('server started');
 });
